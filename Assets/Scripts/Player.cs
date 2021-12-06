@@ -7,25 +7,41 @@ public class Player : MonoBehaviour
     private Vector3 movementVector;
     private Animator animator;
     private float speed;
-    private RigidBody body;
-
+    private Rigidbody body;
+    private Health health;
     // Start is called before the first frame update
     void Start()
     {
+        health = GetComponent<Health>();
         animator = transform.GetChild(0).GetComponent<Animator>();
-        body = GetComponent<RigidBody>();
+        body = GetComponent<Rigidbody>();
         speed = 1.5f;
     }
 
     void CalcualteMovement()
     {
-        movementVector = new Vector3(Input.getAxis("Horizontal"), body.velocity.y, Input.GetAxis("Vertical"));
+        movementVector = new Vector3(Input.GetAxis("Horizontal"), body.velocity.y, Input.GetAxis("Vertical"));
+        body.velocity = new Vector3(movementVector.x * speed, movementVector.y, movementVector.z * speed);
     }
     // start at calculateMovement method
 
     // Update is called once per frame
     void Update()
     {
-        
+        CalcualteMovement();
+        if(movementVector != Vector3.zero)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movementVector), 0.25f);
+            animator.SetBool("Walking", movementVector != Vector3.zero);
+        }
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            Hurt(2, 2);
+        }
+    }
+
+    public void Hurt(int amount, int delay = 0)
+    {
+        StartCoroutine(health.TakeDamageDelayed(amount, delay));
     }
 }
